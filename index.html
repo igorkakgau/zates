@@ -13,13 +13,13 @@
             font-family: 'Georgia', serif;
         }
         .navbar {
-            background-color: #8B0000; /* Crimson for military theme */
+            background-color: #8B0000;
         }
         .navbar-brand, .nav-link {
             color: #fff !important;
         }
         .nav-link:hover {
-            color: #d4a373 !important; /* Gold for lyrical contrast */
+            color: #d4a373 !important;
         }
         .hero-section {
             background: url('https://source.unsplash.com/random/1600x400/?war') no-repeat center center;
@@ -36,7 +36,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(139, 0, 0, 0.4); /* Crimson tint overlay */
+            background: rgba(139, 0, 0, 0.4);
         }
         .hero-section h1, .hero-section p {
             position: relative;
@@ -54,12 +54,12 @@
             margin-bottom: 20px;
         }
         .card-header {
-            background-color: #8B0000; /* Crimson for military theme */
+            background-color: #8B0000;
             color: #fff;
             font-weight: bold;
         }
         .card-body {
-            background-color: #fdfaf6; /* Beige for lyrical softness */
+            background-color: #fdfaf6;
         }
         .quote {
             font-style: italic;
@@ -69,7 +69,7 @@
             margin: 15px 0;
         }
         footer {
-            background-color: #8B0000; /* Crimson for military theme */
+            background-color: #8B0000;
             color: #fff;
             padding: 20px 0;
         }
@@ -77,18 +77,18 @@
             max-width: 100%;
             height: auto;
             margin: 15px 0;
-            border: 1px solid #8B0000; /* Crimson border */
+            border: 1px solid #8B0000;
         }
         .contact-section {
             background-color: #fdfaf6;
             padding: 50px 0;
         }
         .btn-primary {
-            background-color: #8B0000; /* Crimson button */
+            background-color: #8B0000;
             border-color: #8B0000;
         }
         .btn-primary:hover {
-            background-color: #6B0000; /* Darker crimson */
+            background-color: #6B0000;
             border-color: #6B0000;
         }
         @media (max-width: 768px) {
@@ -183,43 +183,52 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Custom JavaScript -->
     <script>
-        // Simulated list of meeting files (replace with backend API or file system in production)
-        const meetings = [
-            { file: 'meetings/meeting-2025-04-05.html', date: '5 апреля 2025 года' },
-             { file: 'meetings/meeting-2025-05-01.html', date: '1 мая 2025 года' },
-            // Add more meetings here, e.g., { file: 'meetings/meeting-YYYY-MM-DD.html', date: 'DD Month YYYY года' }
-        ];
+        // Load meetings from meetings.json
+        fetch('meetings.json')
+            .then(response => {
+                if (!response.ok) throw new Error('Не удалось загрузить meetings.json');
+                return response.json();
+            })
+            .then(meetings => {
+                // Sort by date (newest first)
+                meetings.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-        const meetingsContainer = document.getElementById('meetings-container');
+                const meetingsContainer = document.getElementById('meetings-container');
 
-        meetings.forEach(meeting => {
-            fetch(meeting.file)
-                .then(response => {
-                    if (!response.ok) throw new Error('Файл не найден');
-                    return response.text();
-                })
-                .then(content => {
-                    const card = document.createElement('div');
-                    card.className = 'card';
-                    card.innerHTML = `
-                        <div class="card-header">${meeting.date}</div>
-                        <div class="card-body">${content}</div>
-                    `;
-                    meetingsContainer.appendChild(card);
-                })
-                .catch(error => {
-                    console.error(`Ошибка загрузки ${meeting.file}:`, error);
-                    const card = document.createElement('div');
-                    card.className = 'card';
-                    card.innerHTML = `
-                        <div class="card-header">${meeting.date}</div>
-                        <div class="card-body">
-                            <p>Не удалось загрузить текст встречи.</p>
-                        </div>
-                    `;
-                    meetingsContainer.appendChild(card);
+                meetings.forEach(meeting => {
+                    fetch(meeting.file)
+                        .then(response => {
+                            if (!response.ok) throw new Error(`Файл ${meeting.file} не найден`);
+                            return response.text();
+                        })
+                        .then(content => {
+                            const card = document.createElement('div');
+                            card.className = 'card';
+                            card.innerHTML = `
+                                <div class="card-header">${meeting.displayDate}</div>
+                                <div class="card-body">${content}</div>
+                            `;
+                            meetingsContainer.appendChild(card);
+                        })
+                        .catch(error => {
+                            console.error(`Ошибка загрузки ${meeting.file}:`, error);
+                            const card = document.createElement('div');
+                            card.className = 'card';
+                            card.innerHTML = `
+                                <div class="card-header">${meeting.displayDate}</div>
+                                <div class="card-body">
+                                    <p>Не удалось загрузить текст встречи: ${error.message}</p>
+                                </div>
+                            `;
+                            meetingsContainer.appendChild(card);
+                        });
                 });
-        });
+            })
+            .catch(error => {
+                console.error('Ошибка загрузки meetings.json:', error);
+                const meetingsContainer = document.getElementById('meetings-container');
+                meetingsContainer.innerHTML = '<p>Ошибка загрузки встреч. Пожалуйста, попробуйте позже.</p>';
+            });
     </script>
 </body>
 </html>
